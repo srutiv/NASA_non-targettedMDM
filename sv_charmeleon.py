@@ -30,6 +30,7 @@ def corner_detector(list_names):
     index = 0
     
     # Take first frame
+    old_frame = cv2.imread(list_names[index])
     old_gray = cv2.imread(list_names[index],0)
     #old_gray = cv2.cvtColor(old_gray, cv2.COLOR_BGR2GRAY)
     
@@ -51,7 +52,7 @@ def corner_detector(list_names):
     print('number of corners found: '+ str(len(p0)))
     
     # Create a mask image for drawing purposes
-    mask = np.zeros_like(old_gray) 
+    mask = np.zeros_like(old_frame) 
     
     while index < (len(list_names)-1):
         print('image' + str(index))
@@ -64,28 +65,24 @@ def corner_detector(list_names):
                       criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10,0.03))
         
         # calculate optical flow
-        # for a sparse feature set using the iterative LK method with pyramids
-        print('p0 = ' + str(len(p0)))
-        
+        # for a sparse feature set using the iterative LK method with pyramids       
         p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
         
         #p1 = p1[st==1] #shouldn't p1 = p1[st==1]??; i.e. only found points?
-        prev_coord = p0
         print('p0 = ' + str(len(p0))); print('p1 = ' + str(len(p1))); print('prev_coord = ' + str(len(prev_coord)))
         
-        if ((len(p0) != len(p1)) or (len(p1) != len(prev_coord))):
+        if (len(p1) != len(prev_coord)):
             print('didnt find same corners')
             #can't find corners --> iterate over new lk parameters
             for i in range(20,100,2): #change criteria for max number of iterations first 
                 lk_params['criteria'][1] = i
                 print('criteria = ' + str(i))
                 
-                prev_coord = p0
                 p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params) #recalculate p1
                 #p1 = p1[st==1] #shouldn't p1 = p1[st==1]??
                 print ('new p1 length = ' + str(len(p1)))
                 
-                if ((len(p0) != len(p1)) or (len(p1) != len(prev_coord))):
+                if (len(p1) != len(prev_coord)):
                     print('still bad. continue changing criteria')
                     continue
                 else:
@@ -94,16 +91,19 @@ def corner_detector(list_names):
         else:
             print('found same corners')
         
+        print('p0 = ' + str(len(p0))); print('p1 = ' + str(len(p1))); print('prev_coord = ' + str(len(prev_coord)))
         #previous block of code should ensure that len(p1) == len(prev_coord)
         
         H, Hmask = cv2.findHomography(p0, p1, cv2.RANSAC,5.0) #H is 3x3 homography matrix
         
-        img1_pts.append(p0)
+        print(prev_coord[0][0])
+        img1_pts.append(prev_coord)
         img2_pts.append(p1)
         H_mat.append(H)
         
         prev_coord = p1
-       
+        print(prev_coord[0][0])
+        
         # Select good points #does p0 need to be reshaped to this good_new at the end? shouldn't p1 = p1[st==1]??
         good_new = p1
         good_old = p0
@@ -124,14 +124,14 @@ def corner_detector(list_names):
         if k == 27:
             break
         # Now update the previous frame and previous points
-        old_gray = frame.copy()
+        old_frame = frame.copy()
         index = index + 1
         
         #p0 = good_new.reshape(-1,1,2)
     
     cv2.destroyAllWindows()
         
-    return [img1_pts, img2_pts, H_mat]
+    return [img1_pts, img2_pts, H_mat,p0,prev_coord,p1,img] #prev_coord and p1 just the latest for verification; img is the last one for plotting
     
 
 ######################################################## MAIN ###########################################
@@ -141,11 +141,12 @@ if __name__ == "__main__":
     # Create list of names here from A_Run24_Seq4_00000.tif up to A_Run24_Seq4_00009.tif
     #list_names = ['C:/Users/svutukur/Documents/tbw1_data/A_Run143_Seq' + str(i) + '_00001.tif' for i in range(6,9)]
     #list_names = ['C:/Users/svutukur/Documents/multi_track/cam2_' + '0000' + str(i) + '.tif' for i in range(1,8)] 
-    #list_names = ['C:/Users/svutukur/Documents/fancy_wand/cam1_' + '000' + str(i) + '.tif' for i in range(10,20)]
-    list_names = ['C:/Users/svutukur/Documents/tbw3_sample_data/run001/A_run001_seq007_00' + str(i) + '.tiff' for i in range(10,20)]
+    #list_names = ['C:/Users/svutukur/Documents/fancy_wand/cam1_' + '0000' + str(i) + '.tif' for i in range(1,9)]
+    list_names = ['C:/Users/svutukur/Documents/tbw3_sample_data/run001/seq007/A_run001_seq007_00' + str(i) + '.tiff' for i in range(10,20)]
     print('number of MDM images to track: ' + str(len(list_names)))
-    
-    [img1_pts, img2_pts, H_mat] = corner_detector(list_names)
+      
+    [img1_pts, img2_pts, H_mat,p0,prev_coord,p1,img] = corner_detector(list_names)
+    cv2.imwrite('last_position.jpg ',img)
     
     disp3 = []
     first = 0

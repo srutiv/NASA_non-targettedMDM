@@ -18,9 +18,7 @@ import sv_checker_calib
 import os
 
 
-def find_matches(kp1,des1,pic2):
-   
-    img2 = cv2.imread(pic2,0)
+def find_matches(kp1,des1,img2):
 
     kp2, des2 = sift.detectAndCompute(img2,None)
     
@@ -32,7 +30,7 @@ def find_matches(kp1,des1,pic2):
     matches = flann.knnMatch(des1,des2,k=2)
     
     #return homography transform matrix H and image coordinate displacement vector
-    return [img2, kp2, des2, matches, flann] #change name; what *type* of displacements are these
+    return [kp2, des2, matches, flann] #change name; what *type* of displacements are these
 
 
 
@@ -41,9 +39,10 @@ def find_matches(kp1,des1,pic2):
 
 [newcameramtx, total_error] = sv_checker_calib.main() #extract the camera distorion matrix
 # Create list of names here from A_Run24_Seq4_00000.tif up to A_Run24_Seq4_00009.tif
-list_names = ['C:/Users/svutukur/Documents/tbw1_data/A_Run143_Seq' + str(i) + '_00001.tif' for i in range(6,9)]
+#list_names = ['C:/Users/svutukur/Documents/tbw1_data/A_Run143_Seq' + str(i) + '_00001.tif' for i in range(6,9)]
 #list_names = '[C:/Users/svutukur/Documents/multi_track/cam2_' + '0000' + str(i) + '.tif' for i in range(1,8)]
 #list_names = ['C:/Users/svutukur/Documents/fancy_wand/cam1_' + '0000' + str(i) + '.tif' for i in range(1,9)]
+list_names = ['C:/Users/svutukur/Documents/tbw3_sample_data/run001/seq007/A_run001_seq007_00' + str(i) + '.tiff' for i in range(10,13)]
 print('number of MDM images to track: ' + str(len(list_names)))
 
 disp3 = []
@@ -73,36 +72,63 @@ while first < len(list_names)-1:
     search_params = dict(checks = 50)
     
     if first == 0: #initializsing ground_match_num
-        [img2, kp2, des2, matches, flann] = find_matches(kp1,des1,list_names[first+1])
-    else:
-        [img2, kp2, des2, matches, flann]= find_matches(kp1,des1,list_names[first+1])
+        img2 = cv2.imread(list_names[first+1],0) 
+        [kp2, des2, matches, flann] = find_matches(kp1,des1,img2)
         
-        if len(matches) != ground_match_num:
+        print('OG matches ' + str(len(matches)))
+        # store all the good matches as per Lowe's ratio test.
+        good = []  #PROBLEMS ARE HAPPENING HERE!!!!
+        for m,n in matches:
+            #if m.distance < 0.7*n.distance:
+            good.append(m)
+        
+        ground_match_num = len(good)
+        print('ground_match_num = ' + str(ground_match_num))
+        
+    else:
+        img2 = cv2.imread(list_names[first+1],0) 
+        [kp2, des2, matches, flann]= find_matches(kp1,des1,img2)
+        
+        print(len(matches))
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m,n in matches:
+            #if m.distance < 0.7*n.distance:
+            good.append(m)
+
+        print(len(good))
+        
+        if len(good) != ground_match_num:
             print('didnt find the same number of matches')
             #can't find same number of matches --> iterate over search_params first
-            for k in range(60,500,10):
-                print('reached')
-                search_params['checks'] = k
-                print('number of checks: '+ str(k))
+            for k in range(5,20,5):
+                index_params['trees'] = k
+                print('number of trees: '+ str(k))
                 
-                [img2, kp2, des2, matches, flann] = find_matches(kp1,des1,list_names[first+1])
+                low_res = cv2.pyrDown(img2)
                 
-                if len(matches) != ground_match_num:
+                [kp2, des2, matches, flann] = find_matches(kp1,des1,low_res)
+                
+                print(len(matches))
+                # store all the good matches as per Lowe's ratio test.
+                good = []
+                for m,n in matches:
+                    #if m.distance < 0.7*n.distance:
+                    good.append(m)
+
+                print(len(good))
+                
+                if len(good) != ground_match_num:
                     print('still bad. continue changing checks')
                     continue
                 else:
                     print('found good criteria')
-                    #break
+                    break
         else:
             print('found the same number of matches')
-        
-    # store all the good matches as per Lowe's ratio test.
-    good = []
-    for m,n in matches:
-        if m.distance < 0.7*n.distance:
-            good.append(m)
     
-            
+    #previous block of code ensures that number of good matches == ground_match number
+        
     if len(good)>MIN_MATCH_COUNT:
         #feature detections
         img1_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2) #matched pt locations in image 1
@@ -123,13 +149,14 @@ while first < len(list_names)-1:
         print ("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT))
         matchesMask = None
     
-    print('good len' + str(len(good)))
+    print('good len ' + str(len(good)))
     draw_params = dict(matchColor = (0,255,0), # draw matches in green color
                        singlePointColor = False,
                        matchesMask = matchesMask, # draw only inliers
                        flags = 2)
 
     img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
+    img3 = cv2.resize(img3, (960, 540))  
             
     #reshaping pixel coord matrices img1_pts, img2_pts to allow for matrix multiplication
     img1_pts = img1_pts[:,0,:]
@@ -161,7 +188,7 @@ while first < len(list_names)-1:
     
     disp3 = np.hstack((disp3,disp2))
     
-    cv2.imwrite('/Users/svutukur/Documents/GitHub/cv_mdm2019/' + 'matches with' + str(list_names[first+1]) +'.png', img3)
+    cv2.imwrite('matches.jpg', img3)
     print('completed first' + str(first+1))
     
     first = first + 1;
