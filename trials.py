@@ -26,3 +26,9 @@ for i in range(0,len(p0)):
     img = cv2.circle(color,(p0[i][0][0],p0[i][0][1]), radius = 10, color = (0,0,255), thickness=-1)
 
 cv2.imwrite('sift_keypoints.jpg',img)
+
+    #maskimage = cv2.imread(list_names,0) #1-channel image
+    
+    roi = old_gray[500:4000, 500:4000]
+    #roi = None
+    

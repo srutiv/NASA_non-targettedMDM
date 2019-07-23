@@ -35,7 +35,7 @@ def corner_detector(list_names):
     #old_gray = cv2.cvtColor(old_gray, cv2.COLOR_BGR2GRAY)
     
     #params for ShiTomasi corner detection
-    #maskimage = cv2.imread(list_names,0) #1-channel image
+
     feature_params = dict(maxCorners = 100,
                            qualityLevel = 0.3,
                            minDistance = 7,
