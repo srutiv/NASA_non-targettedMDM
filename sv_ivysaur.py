@@ -103,8 +103,9 @@ while first < len(list_names)-1:
             #can't find same number of matches --> iterate over search_params first
             for k in range(5,20,5):
                 index_params['trees'] = k
-                print('number of trees: '+ str(k))
+                print('number of trees: '+ str(k)) #not the best parameter to iterate over
                 
+                #didnt help much with finding the same number of features as during intialization
                 low_res = cv2.pyrDown(img2)
                 
                 [kp2, des2, matches, flann] = find_matches(kp1,des1,low_res)

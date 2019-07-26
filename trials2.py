@@ -87,7 +87,7 @@ def big(im_name):
     
     
     
-    while num_roi < 1:
+    while num_roi < 2:
     
         cv2.setMouseCallback("image", click_and_crop)
         
@@ -113,21 +113,27 @@ def big(im_name):
     ROI = np.zeros(image.shape[:2], np.uint8)
     #x1 = refPt[1][0]; x2 = refPt[2][0]; y1 = refPt[1][1]; y2 = refPt[2][1] 
     
-    #are these offset somehow???
-    x1 = np.minimum(refPt[1][0],refPt[2][0]); x2 = np.maximum(refPt[1][0],refPt[2][0])
-    y1 = np.minimum(refPt[1][1],refPt[2][1]); y2 = np.maximum(refPt[1][1],refPt[2][1])
-    
     refPt = refPt[1:] #ignore the zero initializing row
     
-    ROI[y1:y2,x1:x2] = 255 #the order of these are important; (0,0) at top left
-    boundbox = cv2.rectangle(image, (x1,y1), (x2,y2), (255,0,0), 2)
-    masked_img = cv2.bitwise_and(image,image,mask = ROI)
-    masked_gray = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
-    #cv2.imshow('mask', masked_img)
-    #key = cv2.waitKey(2000)
-    #cv2.destroyAllWindows()
+    masked_grays = [0] * num_roi
+    boundboxes = [0]* num_roi
+    
+    for r in range(0,num_roi):
+        
+        #are these offset somehow???
+        x1 = np.minimum(refPt[r][0],refPt[r+1][0]); x2 = np.maximum(refPt[r][0],refPt[r+1][0])
+        y1 = np.minimum(refPt[r][1],refPt[r+1][1]); y2 = np.maximum(refPt[r][1],refPt[r+1][1])
+        
+        
+        ROI[y1:y2,x1:x2] = 255 #the order of these are important; (0,0) at top left
+        boundboxes[r] = cv2.rectangle(image, (x1,y1), (x2,y2), (255,0,0), 2)
+        masked_img = cv2.bitwise_and(image,image,mask = ROI)
+        masked_grays[r] = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
+        #cv2.imshow('mask', masked_img)
+        #key = cv2.waitKey(2000)
+        #cv2.destroyAllWindows()
 
-    return [refPt, masked_gray,boundbox]
+    return [refPt, num_roi, masked_grays,boundboxes]
 
 #[refPt, masked_img] = big()
 

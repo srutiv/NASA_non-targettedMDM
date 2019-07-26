@@ -14,10 +14,6 @@ import sys
 import matplotlib.pyplot as plt
 
 def main():
-    my_path = "/Users/svutukur/Documents/our_check_calib/"# enter the dir name
-    for fname in os.listdir(my_path):
-        if fname.startswith("imagecalibrated.png"):
-            os.remove(os.path.join(my_path, fname))
     
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -86,7 +82,7 @@ def main():
     #x, y, w, h = roi
     #x, y, w, h = w, h, w, h
     #dst = dst[y:y + h, x:x + w]
-    cv2.imwrite(my_path + 'imagecalibrated.png', dst)
+    cv2.imwrite('imagecalibrated.png', dst)
     
     
     # Display the original image next to the calibrated image
