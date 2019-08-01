@@ -56,5 +56,5 @@ if __name__ == "__main__":
        A[i][0] = i
        A[i][1] = corner_detector(high_res,'frameOG.jpg')
        A[i][2] = corner_detector(low_res,'frameLow.jpg')
-       A[i][3] = corner_detector(thresh_img,'frameLow.jpg')
+       A[i][3] = corner_detector(thresh_img,'frameThresh.jpg')
        

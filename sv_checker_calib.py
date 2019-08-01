@@ -13,7 +13,11 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
-def main():
+#this script returns the camera matrix of intrinsic parameters of a single camera [[fx 0 cx],[0 fy cy], [0 0 1]]
+#uses a checkerboard pattern to calibration
+#accounts for distortion
+
+def checker_calib(images):
     
     # termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -29,7 +33,6 @@ def main():
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space (object points)
     imgpoints = [] # 2d points in image plane (image points)
-    images = ['C:/Users/svutukur/Documents/our_check_calib/cam1_0000' + str(i) + '.tif' for i in range(1,3)]
     print(len(images))
     
     counter = 0
@@ -72,6 +75,7 @@ def main():
     img = cv2.imread(images[len(images)-1])
     h = img.shape[0]
     w = img.shape[1]
+    
     #Returns the new camera matrix based on the free scaling paramete; play around with alpha parameter
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 1, (w, h))
     
@@ -82,15 +86,11 @@ def main():
     #x, y, w, h = roi
     #x, y, w, h = w, h, w, h
     #dst = dst[y:y + h, x:x + w]
-    cv2.imwrite('imagecalibrated.png', dst)
     
     
     # Display the original image next to the calibrated image
-    cv2.imwrite('/Users/svutukur/Documents/GitHub/cv_mdm2019/' + 'imageoriginal.png', img)
-    cv2.imwrite('/Users/svutukur/Documents/GitHub/cv_mdm2019/' + 'imagecalibrated.png', dst)
-    #plt.subplot(221), plt.imshow(img), plt.title('image original')
-    #plt.subplot(222), plt.imshow(dst), plt.title('image calibrated')
-    #plt.show()
+    cv2.imwrite('imageoriginal.png', img)
+    cv2.imwrite('imagecalibrated.png', dst)
     
     #calculate reprojection error
     #estimation of how exact is the found parameters
@@ -106,6 +106,3 @@ def main():
     
     return [newcameramtx, total_error]
     
-####################################################### MAIN ###########################################
-if __name__ == "__main__":
-    [newcameramtx, total_error] = main(sys.argv)
