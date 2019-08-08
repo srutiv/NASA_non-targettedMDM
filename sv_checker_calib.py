@@ -39,6 +39,7 @@ def checker_calib(images):
     for idx,fname in enumerate(images):
         while counter < len(images):
             img = cv2.imread(fname)
+            img = np.array(img, dtype='uint8')
             gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
         
             # Find the chess board corners

@@ -10,7 +10,7 @@ import math
 
 def load_images():
     #returns an array of images of interest
-    images = ['C:/Users/svutukur/Desktop/cv_mdm2019D/splatter/A_Run24_Seq4_0000' + str(i) + '.tif' for i in range(2,5)]
+    images = ['C:/Users/svutukur/Documents/splatter/A_Run24_Seq4_0000' + str(i) + '.tif' for i in range(2,5)]
     num_images = len(images)
     return [images, num_images]
 

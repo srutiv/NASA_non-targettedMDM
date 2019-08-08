@@ -8,14 +8,9 @@ Created on Mon Jun 17 12:22:05 2019
 
 import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-import fnmatch
-import sys
-import subprocess
 import math
 from numpy.linalg import inv
-import sv_checker_calib
-import os
+from sv_checker_calib import checker_calib
 
 
 def find_matches(kp1,des1,img2):
@@ -37,12 +32,16 @@ def find_matches(kp1,des1,img2):
 ####################################################### MAIN ###########################################
 #if __name__ == "__main__":
 
-[newcameramtx, total_error] = sv_checker_calib.main() #extract the camera distorion matrix
+
 # Create list of names here from A_Run24_Seq4_00000.tif up to A_Run24_Seq4_00009.tif
 #list_names = ['C:/Users/svutukur/Documents/tbw1_data/A_Run143_Seq' + str(i) + '_00001.tif' for i in range(6,9)]
 #list_names = '[C:/Users/svutukur/Documents/multi_track/cam2_' + '0000' + str(i) + '.tif' for i in range(1,8)]
 #list_names = ['C:/Users/svutukur/Documents/fancy_wand/cam1_' + '0000' + str(i) + '.tif' for i in range(1,9)]
+checkers = ['C:/Users/svutukur/Documents/our_checker_calib/cam1_0000' + str(i) + '.tif' for i in range(0,9)]
 list_names = ['C:/Users/svutukur/Documents/tbw3_sample_data/run001/seq007/A_run001_seq007_00' + str(i) + '.tiff' for i in range(10,13)]
+
+[newcameramtx, total_error] = checker_calib(checkers) #extract the camera distorion matrix
+
 print('number of MDM images to track: ' + str(len(list_names)))
 
 disp3 = []

@@ -11,7 +11,6 @@ import cv2
 def get_ROIs(im_name):
     
     dPt = []
-    refPt = [(0,0)]
     drawing = False
     num_roi = 0
     
@@ -27,7 +26,6 @@ def get_ROIs(im_name):
             if event == cv2.EVENT_LBUTTONDOWN:
                 
                 dPt = [(x,y)]
-                refPt.append((x,y))
                 #ix, iy = x, y
                 drawing = True
                 #refPt.append((x, y))
@@ -37,14 +35,17 @@ def get_ROIs(im_name):
                 # record the ending (x, y) coordinates and indicate that
                 # the cropping operation is finished
                 
-                
-                refPt.append((x, y))
                 dPt.append((x,y))
                 
                 # draw a rectangle around the region of interest
                 #cv2.rectangle(image, refPt[num_roi*2+1], refPt[num_roi*2+2], (0, 255, 0), 2)
                 drawing = False
                 cv2.rectangle(image,dPt[0], dPt[1], (0,255,0), 4)
+                
+                ROI[dPt[0][1]:dPt[1][1],dPt[0][0]:dPt[1][0]] = 255 #the order of these are important; (0,0) at top left
+                boundboxes[num_roi] = cv2.rectangle(image, (dPt[0][0],dPt[0][1]), (dPt[1][0],dPt[1][1]), (0,255,0), 6)
+                masked_img = cv2.bitwise_and(image,image,mask = ROI)
+                masked_grays[num_roi] = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
                 #each rectangle to be plotted follows the index pattern num_roi*2 + 1
                 cv2.imshow("image", image)
             
@@ -56,9 +57,15 @@ def get_ROIs(im_name):
     clone = image.copy()
     cv2.namedWindow("image", cv2.WINDOW_NORMAL)
     
+    #create mask
+    #replace "image" with "color" --> OG
+    ROI = np.zeros(image.shape[:2], np.uint8)
+    #x1 = refPt[1][0]; x2 = refPt[2][0]; y1 = refPt[1][1]; y2 = refPt[2][1] 
     
+    masked_grays = [0] * 2 #2 = number of roi
+    boundboxes = [0]* 2
     
-    while num_roi < 3:
+    while num_roi < 2:
     
         cv2.setMouseCallback("image", click_and_crop)
         
@@ -78,32 +85,23 @@ def get_ROIs(im_name):
     
     cv2.destroyAllWindows()
     
-    
-    #create mask
-    #replace "image" with "color" --> OG
-    ROI = np.zeros(image.shape[:2], np.uint8)
-    #x1 = refPt[1][0]; x2 = refPt[2][0]; y1 = refPt[1][1]; y2 = refPt[2][1] 
-    
-    refPt = refPt[1:] #ignore the zero initializing row
-    
-    masked_grays = [0] * num_roi
-    boundboxes = [0]* num_roi
-    
-    for r in range(0,num_roi):
-        
-        #are these offset somehow???
-        x1 = np.minimum(refPt[r][0],refPt[r+1][0]); x2 = np.maximum(refPt[r][0],refPt[r+1][0])
-        y1 = np.minimum(refPt[r][1],refPt[r+1][1]); y2 = np.maximum(refPt[r][1],refPt[r+1][1])
-        
-        
-        ROI[y1:y2,x1:x2] = 255 #the order of these are important; (0,0) at top left
-        boundboxes[r] = cv2.rectangle(image, (x1,y1), (x2,y2), (255,0,0), 2)
-        masked_img = cv2.bitwise_and(image,image,mask = ROI)
-        masked_grays[r] = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
-        #cv2.imshow('mask', masked_img)
-        #key = cv2.waitKey(2000)
-        #cv2.destroyAllWindows()
 
-    return [refPt, masked_grays, boundboxes]
+    
+#    for r in range(0,num_roi):
+#        
+#        #are these offset somehow???
+#        x1 = np.minimum(refPt[r][0],refPt[r+1][0]); x2 = np.maximum(refPt[r][0],refPt[r+1][0])
+#        y1 = np.minimum(refPt[r][1],refPt[r+1][1]); y2 = np.maximum(refPt[r][1],refPt[r+1][1])
+#        
+#        
+#        ROI[y1:y2,x1:x2] = 255 #the order of these are important; (0,0) at top left
+#        boundboxes[r] = cv2.rectangle(image, (x1,y1), (x2,y2), (255,0,0), 2)
+#        masked_img = cv2.bitwise_and(image,image,mask = ROI)
+#        masked_grays[r] = cv2.cvtColor(masked_img, cv2.COLOR_BGR2GRAY)
+#        #cv2.imshow('mask', masked_img)
+#        #key = cv2.waitKey(2000)
+#        #cv2.destroyAllWindows()
+
+    return [masked_grays, boundboxes]
 
 #if __name__ == "__main__":   
