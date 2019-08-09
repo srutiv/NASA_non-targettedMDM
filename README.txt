@@ -1,38 +1,52 @@
 READ ME
-Last updated 7/18/19 by Sruti Vutukury
--refer to report/poster presentation for detailed discussion on algorithms
--hopefully my code is commented enough
+Last updated 8/9/19 by Sruti Vutukury
+-refer to documentation for detailed discussion on algorithms
 
-1. cv_fun: folder of scripts from openCV sample folder
+-spec-file.txt: create an environment with these packages to make sure all the algorithms and classes are available
 
-2. spec-file.txt: create an environment with these packages to make sure all the algorithms and classes are available
+-cv_fun: folder of scripts from openCV sample folder
 
-3. “buggy” folder: contains scripts that I was playing around with; very buggy, but kept just incase
+-buggy folder: contains scripts that I was playing around with; very buggy, but kept just incase
 
-4. sv_checker_calib.py: checkerboard calibration script; returns camera matrix with extrinsic and instrinsic parameters; need at least 7 checkerboard calibration images
+-sv_checker_calib.py: checkerboard calibration script; for 1 camera; returns camera matrix with instrinsic parameters; includes distortion and key; need at least 7 checkerboard calibration images
 
-5. sv_harris_corner.py: detects and matches harris corners
+-sv_blob_finder.py: simple blob finder
 
-6. sv_hough_detect.py: hough circle finder; does blurring and increasing threshold to detect and track circles
+-sv_blob_param_iter.py: iterates over thresholds of blob finder until a certain number of blobs are found; good when you have a known number of targets or a calibration wand; can be added as error handling code when you are not able to find enough blobs
 
-7. sv_blob_finder.py: simple blob finder
+-sv_harris_corner.py: detects and matches harris corners
 
-8. sv_blob_param_iter.py: iterates over thresholds of blob finder until a certain number of blobs are found; good when you have a known number of targets or a calibration wand
+-sv_hough_detect.py: hough circle finder; does blurring and increasing threshold to detect and track circles
 
-9. sv_dense_optical_flow.py: as its name implies
+-sv_dense_optical_flow.py: as its name implies; not great for our application as feature detection and tracking is done over ALL pixels --> too much noise
 
-10. sv_sparse_optical_flow.py: as its name implies
+-sv_sparse_optical_flow.py: as its name implies; better for our application as feature detection and tracking is done only when certain thresholds are met; powerful enough for our application
 
-11. sv_sift.py: SIFT/SURF feature detector and  FLANN based matcher;  key point = coord of detected feature, descriptor = array of numbers that describe the feature; descriptors are similar —> feature is similar 
+-sv_detect_more.py: playing around with blurring, binarizing, and downsampling to find more corners using Shi-Tomasi
 
-12. sv_motemplate.py: motion template technique; Motion templates is alternative technique for detecting motion and computing its direction; finding a small part of an image that matches a template image; template matcher used to make comparisons
+-sv_sift.py: SIFT/SURF feature detector and  FLANN based matcher; between two images
 
-13. sv_bulbasoar.py: loads images, SIFT/SURF/FLANN feature detector and tracker, homography matrix, camera matrix, displacements not right --> main problem: the same features are not found from image pair to image pair
+-sv_motemplate.py: motion template technique; Motion templates is alternative technique for detecting motion and computing its direction; finding a small part of an image that matches a template image; template matcher used to make comparisons
 
-14. sv_ivysaur.py: loads images, SIFT/SURF/FLANN-or BF feature detector and tracker, homography matrix, camera matrix, hopefully the right displacements
+-sv_get_disps.py: has 2D and 3D displacement calculator; 3D displacement calc has camera matrices hard-coded in
 
-15. sv_charmander.py: sparse optical flow with FlowPyrLK (corner matcher); input either goodFeaturestoTrack (corners) or blobs (not that great) from blob_finder to do tracking with; loads images, corner/blob detector, optical flow, pixel displacement
+-sv_getROIs: for user-selected ROIs; can be used to define masks in feature detection algorithms
 
-16. sv_charmeleon.py: sparse optical flow with FlowPyrLK (corner matcher); loads images, corner detector, optical flow, homography matrix, camera matrix, physical displacements; if same # of corners not found —> iterates over parameters for optical flow
+
+Framework 1:
+
+-sv_charmander.py: sparse optical flow; input either goodFeaturestoTrack (Shi-Tomasi corners) or blobs (from blob_finder--not that great) to do tracking with; loads images -->  corner/blob detector --> optical flow tracking -->pixel displacement; 1 cam; no user-selected ROI
+
+-sv_charmeleon.py: Shi-Tomasi corners + sparse optical flow; loads images --> corner detector --> optical flow tracking --> pixel displacement; no user-selected ROIs; homography matrix, 1 camera intrinsic matrix, calculates 2D physical displacements; if same # of corners not found, iterates over parameters for optical flow
+
+-sv_charizard.py: ran in the recorded demo video; Shi-Tomasi corners + sparse optical flow; loads images --> corner detector --> optical flow --> pixel displacement; user-selected ROIs (from get_ROIs); uses 2+ camera parameters matrix (hardcoded in sv_get_disps), calculates 3D physical displacements (sv_get_disps); if same # of corners not found, iterates over parameters for optical flow
+
+
+Framework 2:
+-sv_bulbasoar.py: loads images, SIFT/SURF/FLANN feature detector and tracker, homography matrix, camera matrix, displacements not right --> main problem: the same features are not found from image pair to image pair
+
+-sv_ivysaur.py: loads images, SIFT/SURF feature detector + FLANN matcher, homography matrix, uses 1 camera intrinsic parameter matrix, does 2D displacement calculation; does not have user-selected ROIs
+
+-sv_venusaur.py: unfortunately did not have time to debug; SIFT/SURF/FLANN feature detector and matcher; outputs are keypoint pixel coordinates are inputed in sv_get_disps.py to get 3D displacement calculations; uses 2+ camera intrinsic and extrinsic parameter matrices; has user-selected ROIs with sv_getROIs
 
 

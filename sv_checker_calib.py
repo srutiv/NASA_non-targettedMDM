@@ -71,8 +71,6 @@ def checker_calib(images):
     
     ###refine the camera matrix
     ##If the scaling parameter alpha=0, it returns undistorted image with minimum unwanted pixels.
-    ##fix accuracy here?
-    #why does it only take 1 image input? what image do we use as input?
     img = cv2.imread(images[len(images)-1])
     h = img.shape[0]
     w = img.shape[1]
@@ -82,12 +80,7 @@ def checker_calib(images):
     
     ## undistortion method 1 (same thing as undistort rectify map method)
     dst = cv2.undistort(img, mtx, dist, None, newcameramtx)
-    
-    # crop the image
-    #x, y, w, h = roi
-    #x, y, w, h = w, h, w, h
-    #dst = dst[y:y + h, x:x + w]
-    
+        
     
     # Display the original image next to the calibrated image
     cv2.imwrite('imageoriginal.png', img)

@@ -9,22 +9,20 @@ import numpy as np
 import cv2
 from sv_getROIs import get_ROIs
 from sv_get_disps import get_3Ddisps
-from sv_get_disps import get_stats
 
 
     ############################displacement calculator#########################################################
 
     
-def corner_detectTrack(camA, camB, tag = True):
+def corner_detectTrack(camA, camB):
     
-    # Generate some random colors later used to display movement paths
-    #color = np.random.randint(0,255,(100,3))
+    # Generate some random colors later used to display movement tracks
     color3 = np.ones((100,1))*255; color2 = np.zeros((100,1)); color1 = np.zeros((100,1))
     color = np.hstack((color1,color2,color3))
     
     index = 0
     
-    
+    #get ROIs from sv_getROIs module
     [masked_grays1, boundboxes1] = get_ROIs(camA[0])
     [masked_grays2, boundboxes2] = get_ROIs(camB[0])
     
@@ -32,11 +30,9 @@ def corner_detectTrack(camA, camB, tag = True):
     old_frame = cv2.imread(camA[0])
     old_gray = cv2.imread(camA[0],0)
      
-#    slidesA = [[None]*num_roi for x in range(len(second_cam)-1)] #2D list: image set  x num of 
-#    slidesB = [[None]*num_roi for x in range(len(first_cam)-1)]
     
-    slidesA = [[None] for x in range(len(first_cam)-1)] #2D list: image set  x num of 
-    slidesB = [[None] for x in range(len(second_cam)-1)]
+    slidesA = [[None] for x in range(len(first_cam)-1)] #images from camA used for plotting
+    slidesB = [[None] for x in range(len(second_cam)-1)] #images from camB used for plotting
     
     disps_roi = {'ROI # ' + str(u): 0 for u in range(num_roi)}
     
@@ -265,7 +261,8 @@ def corner_detectTrack(camA, camB, tag = True):
 ######################################################## MAIN ###########################################
 if __name__ == "__main__":
     
-    #[newcameramtx, total_error] = sv_checker_calib.main() #extract the camera distorion matrix
+    #[newcameramtx, total_error] = sv_checker_calib.main() #extract the instrinsic camera parameter matrix if using 2D openCV camera calibration script
+    
     # Create list of names here from A_Run24_Seq4_00000.tif up to A_Run24_Seq4_00009.tif
     #list_names = ['C:/Users/svutukur/Documents/tbw1_data/A_Run143_Seq' + str(i) + '_00001.tif' for i in range(6,9)]
     #list_names = ['C:/Users/svutukur/Documents/multi_track/cam2_' + '0000' + str(i) + '.tif' for i in range(1,8)] 
@@ -278,5 +275,5 @@ if __name__ == "__main__":
     
     num_roi = 2
     
-    [tot_disps, disps_roi] = corner_detectTrack(first_cam, second_cam, tag = True) #tag means that it's the first camera where the features are used for initialization
+    [tot_disps, disps_roi] = corner_detectTrack(first_cam, second_cam)
     
